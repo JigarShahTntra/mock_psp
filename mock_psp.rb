@@ -3,13 +3,6 @@ require 'json'
 require 'securerandom'
 require 'rack'
 require 'rack/handler/webrick'
-begin
-  require 'byebug'
-rescue LoadError
-  module Kernel
-    def byebug; end
-  end
-end
 
 # Compatibility shim: define missing constant for certain Rack/WEBrick combos
 unless defined?(Rack::Handler::WEBrick::RACK_VERSION)
@@ -26,7 +19,6 @@ unless defined?(Rack::Handler::WEBrick::RACK_VERSION)
 end
 
 app = Proc.new do |env|
-  byebug if ENV['DEBUG'] == '1'
   req = Rack::Request.new(env)
   if req.path == '/payments/authorize' && req.post?
     body = JSON.parse(req.body.read) rescue {}
