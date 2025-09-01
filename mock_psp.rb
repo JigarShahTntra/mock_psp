@@ -1,11 +1,24 @@
 # mock_psp.rb (simple Rack app)
 require 'json'
 require 'securerandom'
+require 'rack'
 require 'rack/handler/webrick'
-require 'byebug'
+
+# Compatibility shim: define missing constant for certain Rack/WEBrick combos
+unless defined?(Rack::Handler::WEBrick::RACK_VERSION)
+  rack_version = if Rack.respond_to?(:release)
+    Rack.release
+  elsif Rack.respond_to?(:version)
+    Rack.version
+  elsif Rack.const_defined?(:RELEASE)
+    Rack.const_get(:RELEASE)
+  else
+    'unknown'
+  end
+  Rack::Handler::WEBrick.const_set(:RACK_VERSION, rack_version)
+end
 
 app = Proc.new do |env|
-  byebug
   req = Rack::Request.new(env)
   if req.path == '/payments/authorize' && req.post?
     body = JSON.parse(req.body.read) rescue {}
