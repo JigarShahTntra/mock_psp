@@ -1,11 +1,18 @@
 # mock_psp.rb (simple Rack app)
 require 'json'
 require 'securerandom'
+require 'rack'
 require 'rack/handler/webrick'
-require 'byebug'
+begin
+  require 'byebug'
+rescue LoadError
+  module Kernel
+    def byebug; end
+  end
+end
 
 app = Proc.new do |env|
-  byebug
+  byebug if ENV['DEBUG'] == '1'
   req = Rack::Request.new(env)
   if req.path == '/payments/authorize' && req.post?
     body = JSON.parse(req.body.read) rescue {}
