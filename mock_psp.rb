@@ -11,6 +11,20 @@ rescue LoadError
   end
 end
 
+# Compatibility shim: define missing constant for certain Rack/WEBrick combos
+unless defined?(Rack::Handler::WEBrick::RACK_VERSION)
+  rack_version = if Rack.respond_to?(:release)
+    Rack.release
+  elsif Rack.respond_to?(:version)
+    Rack.version
+  elsif Rack.const_defined?(:RELEASE)
+    Rack.const_get(:RELEASE)
+  else
+    'unknown'
+  end
+  Rack::Handler::WEBrick.const_set(:RACK_VERSION, rack_version)
+end
+
 app = Proc.new do |env|
   byebug if ENV['DEBUG'] == '1'
   req = Rack::Request.new(env)
